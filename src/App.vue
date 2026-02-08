@@ -111,14 +111,14 @@ window.addEventListener('click', (e) => {
     </header>
 
     <!-- Main Content -->
-    <main class="pt-20 pb-24">
+    <main class="pt-20 pb-28">
       <router-view v-if="isLoggedIn" />
       <router-view v-else name="Login" />
     </main>
 
     <!-- Bottom Navigation -->
-    <nav v-if="isLoggedIn" class="fixed bottom-0 left-0 right-0 bg-luxury-dark/95 backdrop-blur-sm border-t border-luxury-charcoal">
-      <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-around">
+    <nav v-if="isLoggedIn" class="fixed bottom-0 left-0 right-0 bg-luxury-dark/95 backdrop-blur-sm border-t border-luxury-charcoal pb-safe">
+      <div class="max-w-md mx-auto px-2 py-2 flex items-center justify-around">
         <router-link to="/" class="flex flex-col items-center gap-1" :class="currentRoute() === 'Home' ? 'text-luxury-gold' : 'text-gray-400'">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
           <span class="text-xs">Home</span>
@@ -152,4 +152,18 @@ window.addEventListener('click', (e) => {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .router-link-active { color: #d4af37; }
+
+.pb-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 380px) {
+  nav a span {
+    font-size: 10px;
+  }
+  nav svg {
+    width: 20px;
+    height: 20px;
+  }
+}
 </style>
