@@ -15,6 +15,17 @@ const services = [
   { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', rating: 4.9, duration: 90, price: 150, gradient: 'from-pink-400 via-rose-400 to-red-400' }
 ]
 
+const offers = [
+  { 
+    id: 1, 
+    title: '20% OFF', 
+    subtitle: 'EXCLUSIVE OFFER',
+    description: '20% Off Your First Visit',
+    gradient: 'from-yellow-400 via-orange-400 to-red-400',
+    code: 'FIRST20'
+  }
+]
+
 const getUpcomingBookings = () => {
   const stored = localStorage.getItem('bookings')
   if (stored) {
@@ -49,7 +60,33 @@ const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { 
       </div>
     </section>
 
-    <!-- Featured Services Carousel -->
+    <!-- Featured Discount -->
+    <section class="px-4 py-6">
+      <div v-for="offer in offers" :key="offer.id" :class="`bg-gradient-to-br ${offer.gradient} rounded-3xl p-6 text-white relative overflow-hidden`">
+        <!-- Leaf Graphic -->
+        <div class="absolute right-4 bottom-4 opacity-30">
+          <svg class="w-24 h-24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C12 2 11 4 11 7C11 9 12 11 12 11C12 11 13 9 13 7C13 4 12 2 12 2ZM8 4C8 4 6 6 6 9C6 11 7 13 8 14C8 14 7 16 7 18C7 19 8 20 9 20C10 20 11 19 11 18C11 16 10 14 10 14C11 13 12 11 12 9C12 7 10 5 10 5C9 6 8 7 8 7C8 7 8 6 8 4Z"/>
+          </svg>
+        </div>
+        
+        <div class="relative z-10">
+          <p class="text-xs font-semibold tracking-wider opacity-80 mb-1">{{ offer.subtitle }}</p>
+          <h2 class="text-3xl font-bold mb-2">{{ offer.title }}</h2>
+          <p class="text-white/90 text-sm mb-4">{{ offer.description }}</p>
+          
+          <div class="flex gap-3">
+            <button @click="router.push('/offers')" class="px-4 py-2 bg-black text-white font-semibold rounded-full text-sm">Claim Now</button>
+            <button @click="router.push('/services')" class="px-6 py-3 bg-white text-black font-semibold rounded-full flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Book Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Carousel -->
     <section class="px-4 py-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold">Top-Rated Services</h2>
@@ -68,32 +105,6 @@ const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { 
             <h3 class="font-bold mb-1">{{ service.name }}</h3>
             <p class="text-white/80 text-sm mb-3">{{ service.duration }} min from {{ formatPrice(service.price) }}</p>
             <button @click="router.push('/services')" class="w-full py-2 bg-white text-black font-semibold rounded-full text-sm">Book Now</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Promo Banner - NEW DESIGN -->
-    <section class="px-4 pb-6">
-      <div class="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 rounded-3xl p-6 text-white relative overflow-hidden">
-        <!-- Leaf Graphic -->
-        <div class="absolute right-4 bottom-4 opacity-30">
-          <svg class="w-24 h-24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C12 2 11 4 11 7C11 9 12 11 12 11C12 11 13 9 13 7C13 4 12 2 12 2ZM8 4C8 4 6 6 6 9C6 11 7 13 8 14C8 14 7 16 7 18C7 19 8 20 9 20C10 20 11 19 11 18C11 16 10 14 10 14C11 13 12 11 12 9C12 7 10 5 10 5C9 6 8 7 8 7C8 7 8 6 8 4Z"/>
-          </svg>
-        </div>
-        
-        <div class="relative z-10">
-          <p class="text-xs font-semibold tracking-wider opacity-80 mb-1">EXCLUSIVE OFFER</p>
-          <h2 class="text-2xl font-bold mb-2">20% Off Your First Visit</h2>
-          <p class="text-white/90 text-sm mb-4">New customers get 20% off their first spa experience.</p>
-          
-          <div class="flex gap-3">
-            <button @click="router.push('/offers')" class="px-4 py-2 bg-black text-white font-semibold rounded-full text-sm">Claim Now</button>
-            <button @click="router.push('/services')" class="px-6 py-3 bg-white text-black font-semibold rounded-full flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              Book Now
-            </button>
           </div>
         </div>
       </div>
