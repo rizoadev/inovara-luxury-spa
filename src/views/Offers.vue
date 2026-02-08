@@ -69,7 +69,7 @@ const claimOffer = (offer) => {
 </script>
 
 <template>
-  <div class="px-4 py-6">
+  <div class="px-4 py-6 pb-28">
     <h2 class="text-xl font-bold mb-6">Special Offers</h2>
     
     <div class="space-y-4">
