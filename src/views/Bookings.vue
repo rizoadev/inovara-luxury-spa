@@ -78,8 +78,16 @@ const markCompleted = (bookingId) => {
             <span>{{ booking.time }}</span>
             <span>{{ booking.duration }} min</span>
           </div>
-          <div class="flex items-center justify-between">
+          
+          <!-- Discount Badge -->
+          <div v-if="booking.discount" class="flex items-center gap-2 mb-3">
+            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">{{ booking.discount }}</span>
+            <span v-if="booking.originalPrice > booking.price" class="text-gray-500 line-through text-sm">{{ formatPrice(booking.originalPrice) }}</span>
             <span class="text-luxury-gold font-bold">{{ formatPrice(booking.price) }}</span>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span v-if="!booking.discount" class="text-luxury-gold font-bold">{{ formatPrice(booking.price) }}</span>
             <div class="flex gap-2">
               <button @click="cancelBooking(booking.id)" class="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-full text-xs">Cancel</button>
               <button @click="markCompleted(booking.id)" class="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-full text-xs">Mark Done</button>
@@ -101,8 +109,16 @@ const markCompleted = (bookingId) => {
           <span>{{ formatDate(booking.date) }}</span>
           <span>{{ booking.time }}</span>
         </div>
-        <div class="flex items-center justify-between">
+        
+        <!-- Discount Badge -->
+        <div v-if="booking.discount" class="flex items-center gap-2 mb-3">
+          <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">{{ booking.discount }}</span>
+          <span v-if="booking.originalPrice > booking.price" class="text-gray-500 line-through text-sm">{{ formatPrice(booking.originalPrice) }}</span>
           <span class="text-luxury-gold font-bold">{{ formatPrice(booking.price) }}</span>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <span v-if="!booking.discount" class="text-luxury-gold font-bold">{{ formatPrice(booking.price) }}</span>
           <button class="px-4 py-1.5 bg-luxury-gold text-luxury-dark rounded-full text-sm">Rebook</button>
         </div>
       </div>
