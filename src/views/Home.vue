@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// Mock data (same as App.vue)
 const currentUser = {
   name: 'Elena Sterling',
   avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80'
@@ -16,22 +15,25 @@ const services = [
   { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', rating: 4.9, duration: 90, price: 150, tags: ['Heated Stones'] }
 ]
 
-const bookingHistory = [
-  { id: 'BK-004', date: '2025-02-15', time: '11:00', service: 'Reiki Healing', therapist: 'Lisa Thompson', status: 'upcoming' },
-  { id: 'BK-005', date: '2025-02-20', time: '16:00', service: 'Thai Massage', therapist: 'James Chen', status: 'upcoming' }
-]
+// Get upcoming bookings from localStorage
+const getUpcomingBookings = () => {
+  const stored = localStorage.getItem('bookings')
+  if (stored) {
+    const bookings = JSON.parse(stored)
+    return bookings.filter(b => b.status === 'upcoming').slice(0, 2)
+  }
+  // Default
+  return [
+    { id: 'BK-004', date: '2025-02-15', time: '11:00', service: 'Reiki Healing', therapist: 'Lisa Thompson' },
+    { id: 'BK-005', date: '2025-02-20', time: '16:00', service: 'Thai Massage', therapist: 'James Chen' }
+  ]
+}
 
-const favorites = ref([1, 3])
-
+const upcomingBookings = computed(() => getUpcomingBookings())
 const featuredServices = computed(() => services.slice(0, 3))
-const upcomingBookings = computed(() => bookingHistory.filter(b => b.status === 'upcoming'))
 
 const formatPrice = (price) => `$${price}`
 const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-
-const openBooking = (service) => {
-  router.push({ name: 'Services' })
-}
 </script>
 
 <template>
@@ -69,7 +71,7 @@ const openBooking = (service) => {
               </div>
             </div>
             <p class="text-gray-400 text-sm mb-3">{{ service.duration }} min from {{ formatPrice(service.price) }}</p>
-            <button @click="openBooking(service)" class="w-full py-2 bg-luxury-gold text-luxury-dark font-medium rounded-full text-sm">Book Now</button>
+            <button @click="router.push('/services')" class="w-full py-2 bg-luxury-gold text-luxury-dark font-medium rounded-full text-sm">Book Now</button>
           </div>
         </div>
       </div>
@@ -92,7 +94,7 @@ const openBooking = (service) => {
         <button @click="router.push('/bookings')" class="text-luxury-gold text-sm">See All</button>
       </div>
       <div class="space-y-3">
-        <div v-for="booking in upcomingBookings.slice(0, 2)" :key="booking.id" class="bg-luxury-charcoal rounded-xl p-4 flex items-center gap-4">
+        <div v-for="booking in upcomingBookings" :key="booking.id" class="bg-luxury-charcoal rounded-xl p-4 flex items-center gap-4">
           <div class="w-12 h-12 bg-luxury-gold/20 rounded-xl flex items-center justify-center">
             <svg class="w-6 h-6 text-luxury-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
@@ -106,12 +108,3 @@ const openBooking = (service) => {
     </section>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue'
-export default {
-  setup() {
-    return { favorites: ref([1, 3]) }
-  }
-}
-</script>

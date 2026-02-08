@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -14,12 +14,33 @@ const currentUser = {
   avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80'
 }
 
-const services = [
+const allServices = [
   { id: 1, name: 'Deep Tissue Massage', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', price: 120 },
-  { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', price: 150 }
+  { id: 2, name: 'Swedish Massage', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', price: 100 },
+  { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', price: 150 },
+  { id: 4, name: 'Thai Massage', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80', price: 110 },
+  { id: 5, name: 'Reiki Healing', image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=800&q=80', price: 95 },
+  { id: 6, name: 'Aromatherapy Spa', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', price: 130 }
 ]
 
-const favorites = ref([1, 3])
+// Get favorites from localStorage
+const getFavorites = () => {
+  const stored = localStorage.getItem('favorites')
+  return stored ? JSON.parse(stored) : [1, 3]
+}
+
+const favorites = ref(getFavorites())
+
+// Get bookings from localStorage
+const getBookings = () => {
+  const stored = localStorage.getItem('bookings')
+  return stored ? JSON.parse(stored) : []
+}
+
+const bookings = ref(getBookings())
+const upcomingCount = computed(() => bookings.value.filter(b => b.status === 'upcoming').length)
+const completedCount = computed(() => bookings.value.filter(b => b.status === 'completed').length)
+const totalCount = computed(() => bookings.value.length)
 
 const logout = () => {
   localStorage.removeItem('isLoggedIn')
@@ -60,16 +81,20 @@ const formatPrice = (price) => `$${price}`
         </div>
         <div class="flex items-center justify-between py-3 border-b border-luxury-dark">
           <span class="text-gray-400">Total Bookings</span>
-          <span>5</span>
+          <span>{{ totalCount || 5 }}</span>
+        </div>
+        <div class="flex items-center justify-between py-3 border-b border-luxury-dark">
+          <span class="text-gray-400">Completed</span>
+          <span>{{ completedCount || 3 }}</span>
         </div>
         <div class="flex items-center justify-between py-3">
-          <span class="text-gray-400">Completed</span>
-          <span>3</span>
+          <span class="text-gray-400">Upcoming</span>
+          <span>{{ upcomingCount || 2 }}</span>
         </div>
       </div>
 
       <div v-if="profileTab === 'favorites'" class="space-y-4">
-        <div v-for="service in services" :key="service.id" class="flex items-center gap-4 p-3 bg-luxury-dark rounded-xl">
+        <div v-for="service in allServices.filter(s => favorites.includes(s.id))" :key="service.id" class="flex items-center gap-4 p-3 bg-luxury-dark rounded-xl">
           <img :src="service.image" :alt="service.name" class="w-16 h-16 rounded-lg object-cover" />
           <div class="flex-1">
             <h4 class="font-semibold">{{ service.name }}</h4>
@@ -90,6 +115,10 @@ const formatPrice = (price) => `$${price}`
         </router-link>
         <router-link to="/help-support" class="w-full py-3 bg-luxury-dark rounded-xl text-left px-4 flex items-center justify-between">
           <span>Help & Support</span>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+        </router-link>
+        <router-link to="/edit-profile" class="w-full py-3 bg-luxury-dark rounded-xl text-left px-4 flex items-center justify-between">
+          <span>Edit Profile</span>
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
         </router-link>
         <button @click="logout" class="w-full py-3 bg-red-500/20 text-red-400 rounded-xl font-medium">Logout</button>

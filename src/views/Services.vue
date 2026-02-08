@@ -1,6 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+
+// Services Data
 const services = [
   { id: 1, name: 'Deep Tissue Massage', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', rating: 4.9, reviews: 128, duration: 60, price: 120, tags: ['Organic Oils', 'Heated Table'], description: 'Therapeutic massage for deep muscle tension.' },
   { id: 2, name: 'Swedish Massage', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 95, duration: 60, price: 100, tags: ['Relaxation', 'Aromatherapy'], description: 'Classic relaxation massage.' },
@@ -10,11 +14,67 @@ const services = [
   { id: 6, name: 'Aromatherapy Spa', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 134, duration: 75, price: 130, tags: ['Essential Oils'], description: 'Essential oils treatment.' }
 ]
 
+// Therapists Data
+const therapists = [
+  { id: 1, name: 'Sarah Mitchell', title: 'Senior Therapist', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80', rating: 5.0, specialties: ['Deep Tissue', 'Sports Massage'], bio: '10+ years experience.', price: 140, available: true },
+  { id: 2, name: 'James Chen', title: 'Massage Specialist', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', rating: 4.9, specialties: ['Thai Massage', 'Reiki'], bio: 'Asian healing expert.', price: 130, available: true },
+  { id: 3, name: 'Emma Rodriguez', title: 'Wellness Expert', image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80', rating: 4.8, specialties: ['Aromatherapy', 'Swedish'], bio: 'Holistic wellness.', price: 125, available: true },
+  { id: 4, name: 'Michael Park', title: 'Sports Therapist', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80', rating: 4.9, specialties: ['Sports Massage', 'Deep Tissue'], bio: 'Former athlete.', price: 145, available: false },
+  { id: 5, name: 'Lisa Thompson', title: 'Holistic Practitioner', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80', rating: 5.0, specialties: ['Reiki', 'Meditation'], bio: 'Mind-body expert.', price: 120, available: true }
+]
+
+// Booking History (shared state via localStorage)
+const getBookings = () => {
+  const stored = localStorage.getItem('bookings')
+  return stored ? JSON.parse(stored) : []
+}
+
+const saveBooking = (booking) => {
+  const bookings = getBookings()
+  bookings.unshift(booking)
+  localStorage.setItem('bookings', JSON.stringify(bookings))
+}
+
+// State
 const favorites = ref([1, 3])
 const showBookingModal = ref(false)
 const selectedService = ref(null)
+const selectedTherapist = ref(null)
+const selectedDate = ref('')
+const selectedTime = ref('')
+const bookingNotes = ref('')
+const currentBookingStep = ref(1)
+const bookingSuccess = ref(false)
 
+// Computed
+const availableDates = computed(() => {
+  const dates = []
+  const today = new Date()
+  for (let i = 1; i <= 14; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() + i)
+    dates.push({
+      value: date.toISOString().split('T')[0],
+      label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    })
+  }
+  return dates
+})
+
+const timeSlots = [
+  { label: '09:00 AM', value: '09:00' },
+  { label: '10:00 AM', value: '10:00' },
+  { label: '11:00 AM', value: '11:00' },
+  { label: '01:00 PM', value: '13:00' },
+  { label: '02:00 PM', value: '14:00' },
+  { label: '03:00 PM', value: '15:00' },
+  { label: '04:00 PM', value: '16:00' },
+  { label: '05:00 PM', value: '17:00' }
+]
+
+// Methods
 const formatPrice = (price) => `$${price}`
+const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
 const toggleFavorite = (id) => {
   const idx = favorites.value.indexOf(id)
@@ -24,7 +84,54 @@ const toggleFavorite = (id) => {
 
 const openBooking = (service) => {
   selectedService.value = service
+  selectedTherapist.value = null
+  selectedDate.value = ''
+  selectedTime.value = ''
+  bookingNotes.value = ''
+  currentBookingStep.value = 1
+  bookingSuccess.value = false
   showBookingModal.value = true
+}
+
+const nextStep = () => {
+  if (currentBookingStep.value < 3) currentBookingStep.value++
+}
+
+const prevStep = () => {
+  if (currentBookingStep.value > 1) currentBookingStep.value--
+}
+
+const selectTherapist = (therapist) => {
+  selectedTherapist.value = therapist
+}
+
+const confirmBooking = () => {
+  const booking = {
+    id: `BK-${String(Date.now()).slice(-6)}`,
+    date: selectedDate.value,
+    time: selectedTime.value,
+    service: selectedService.value.name,
+    therapist: selectedTherapist.value?.name || 'Any Available',
+    price: selectedService.value.price,
+    status: 'upcoming',
+    duration: selectedService.value.duration,
+    notes: bookingNotes.value
+  }
+  saveBooking(booking)
+  bookingSuccess.value = true
+}
+
+const closeModal = () => {
+  showBookingModal.value = false
+  if (bookingSuccess.value) {
+    router.push('/bookings')
+  }
+}
+
+const getStatusColor = (status) => {
+  if (status === 'completed') return 'text-green-400 bg-green-400/20'
+  if (status === 'upcoming') return 'text-luxury-gold bg-luxury-gold/20'
+  return 'text-gray-400 bg-gray-400/20'
 }
 </script>
 
@@ -49,6 +156,9 @@ const openBooking = (service) => {
             </div>
           </div>
           <p class="text-gray-400 text-sm mb-3">{{ service.description }}</p>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span v-for="tag in service.tags" :key="tag" class="px-3 py-1 bg-luxury-dark border border-luxury-gold/30 rounded-full text-xs">{{ tag }}</span>
+          </div>
           <div class="flex items-center justify-between">
             <div>
               <span class="text-2xl font-bold text-luxury-gold">{{ formatPrice(service.price) }}</span>
@@ -60,13 +170,108 @@ const openBooking = (service) => {
       </div>
     </div>
 
-    <!-- Booking Modal placeholder -->
+    <!-- Booking Modal -->
     <div v-if="showBookingModal" class="fixed inset-0 z-50 flex items-end justify-center">
-      <div class="absolute inset-0 bg-black/60" @click="showBookingModal = false"></div>
-      <div class="relative bg-luxury-charcoal rounded-t-3xl w-full max-w-md p-6">
-        <h3 class="text-xl font-bold mb-4">Book {{ selectedService?.name }}</h3>
-        <p class="text-gray-400">Booking flow coming soon...</p>
-        <button @click="showBookingModal = false" class="mt-4 w-full py-3 bg-luxury-gold text-luxury-dark rounded-xl">Close</button>
+      <div class="absolute inset-0 bg-black/60" @click="closeModal"></div>
+      <div class="relative bg-luxury-charcoal rounded-t-3xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div class="p-6">
+          <!-- Success State -->
+          <div v-if="bookingSuccess" class="text-center py-8">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+              <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Booking Confirmed!</h3>
+            <p class="text-gray-400 mb-6">Your appointment has been scheduled.</p>
+            <div class="bg-luxury-dark rounded-xl p-4 mb-6 text-left">
+              <div class="flex justify-between mb-2"><span class="text-gray-400">Service</span><span>{{ selectedService?.name }}</span></div>
+              <div class="flex justify-between mb-2"><span class="text-gray-400">Date</span><span>{{ formatDate(selectedDate) }}</span></div>
+              <div class="flex justify-between mb-2"><span class="text-gray-400">Time</span><span>{{ selectedTime }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Therapist</span><span>{{ selectedTherapist?.name || 'Any Available' }}</span></div>
+            </div>
+            <div class="flex gap-4">
+              <button @click="closeModal" class="flex-1 py-3 bg-luxury-dark rounded-xl">Close</button>
+              <button @click="router.push('/bookings')" class="flex-1 py-3 bg-luxury-gold text-luxury-dark rounded-xl font-semibold">View Bookings</button>
+            </div>
+          </div>
+
+          <!-- Booking Steps -->
+          <div v-else>
+            <div class="flex items-center justify-between mb-6">
+              <button @click="closeModal" class="w-8 h-8 rounded-full bg-luxury-dark flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+              <div class="flex gap-2">
+                <span class="w-3 h-3 rounded-full" :class="currentBookingStep >= 1 ? 'bg-luxury-gold' : 'bg-gray-600'"></span>
+                <span class="w-3 h-3 rounded-full" :class="currentBookingStep >= 2 ? 'bg-luxury-gold' : 'bg-gray-600'"></span>
+                <span class="w-3 h-3 rounded-full" :class="currentBookingStep >= 3 ? 'bg-luxury-gold' : 'bg-gray-600'"></span>
+              </div>
+              <span class="text-sm text-gray-400">Step {{ currentBookingStep }}/3</span>
+            </div>
+
+            <h3 class="text-xl font-bold mb-6">
+              {{ currentBookingStep === 1 ? 'Select Date & Time' : currentBookingStep === 2 ? 'Select Therapist' : 'Confirm Booking' }}
+            </h3>
+
+            <!-- Step 1: Date & Time -->
+            <div v-if="currentBookingStep === 1" class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-3">Select Date</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button v-for="date in availableDates.slice(0, 6)" :key="date.value" @click="selectedDate = date.value" class="py-3 rounded-xl text-sm" :class="selectedDate === date.value ? 'bg-luxury-gold text-luxury-dark font-semibold' : 'bg-luxury-dark'">{{ date.label }}</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-3">Select Time</label>
+                <div class="grid grid-cols-4 gap-2">
+                  <button v-for="time in timeSlots" :key="time.value" @click="selectedTime = time.value" class="py-2 rounded-xl text-xs" :class="selectedTime === time.value ? 'bg-luxury-gold text-luxury-dark font-semibold' : 'bg-luxury-dark'">{{ time.label }}</button>
+                </div>
+              </div>
+              <button @click="nextStep" :disabled="!selectedDate || !selectedTime" class="w-full py-3 bg-luxury-gold text-luxury-dark font-semibold rounded-xl mt-6 disabled:opacity-50">Continue</button>
+            </div>
+
+            <!-- Step 2: Therapist -->
+            <div v-if="currentBookingStep === 2" class="space-y-4">
+              <button @click="selectedTherapist = null" class="w-full p-4 rounded-xl text-left mb-3" :class="!selectedTherapist ? 'bg-luxury-gold text-luxury-dark' : 'bg-luxury-dark'">
+                <p class="font-semibold">Any Available Therapist</p>
+                <p class="text-sm opacity-70">We'll assign the best available</p>
+              </button>
+              <div v-for="therapist in therapists.filter(t => t.available)" :key="therapist.id" @click="selectTherapist(therapist)" class="w-full p-4 rounded-xl flex items-center gap-4 cursor-pointer" :class="selectedTherapist?.id === therapist.id ? 'bg-luxury-gold text-luxury-dark' : 'bg-luxury-dark'">
+                <img :src="therapist.image" :alt="therapist.name" class="w-12 h-12 rounded-full object-cover" />
+                <div>
+                  <p class="font-semibold">{{ therapist.name }}</p>
+                  <p class="text-sm opacity-70">{{ therapist.title }}</p>
+                </div>
+              </div>
+              <div class="flex gap-3 mt-6">
+                <button @click="prevStep" class="flex-1 py-3 bg-luxury-dark rounded-xl">Back</button>
+                <button @click="nextStep" class="flex-1 py-3 bg-luxury-gold text-luxury-dark font-semibold rounded-xl">Continue</button>
+              </div>
+            </div>
+
+            <!-- Step 3: Summary -->
+            <div v-if="currentBookingStep === 3" class="space-y-4">
+              <div class="bg-luxury-dark rounded-xl p-4 space-y-3">
+                <div class="flex justify-between"><span class="text-gray-400">Service</span><span>{{ selectedService?.name }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Duration</span><span>{{ selectedService?.duration }} min</span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Date</span><span>{{ formatDate(selectedDate) }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Time</span><span>{{ selectedTime }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Therapist</span><span>{{ selectedTherapist?.name || 'Any Available' }}</span></div>
+                <div class="border-t border-luxury-charcoal pt-3 flex justify-between font-bold">
+                  <span>Total</span>
+                  <span class="text-luxury-gold">{{ formatPrice(selectedService?.price) }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Notes (optional)</label>
+                <textarea v-model="bookingNotes" placeholder="Any special requests..." class="w-full px-4 py-3 bg-luxury-dark rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-luxury-gold resize-none h-20"></textarea>
+              </div>
+              <div class="flex gap-3">
+                <button @click="prevStep" class="flex-1 py-3 bg-luxury-dark rounded-xl">Back</button>
+                <button @click="confirmBooking" class="flex-1 py-3 bg-luxury-gold text-luxury-dark font-semibold rounded-xl">Confirm Booking</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
