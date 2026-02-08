@@ -6,12 +6,12 @@ const router = useRouter()
 
 // Services Data
 const services = [
-  { id: 1, name: 'Deep Tissue Massage', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', rating: 4.9, reviews: 128, duration: 60, price: 120, tags: ['Organic Oils', 'Heated Table'], description: 'Therapeutic massage for deep muscle tension.' },
-  { id: 2, name: 'Swedish Massage', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 95, duration: 60, price: 100, tags: ['Relaxation', 'Aromatherapy'], description: 'Classic relaxation massage.' },
-  { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', rating: 4.9, reviews: 156, duration: 90, price: 150, tags: ['Heated Stones'], description: 'Heated stones for deep relaxation.' },
-  { id: 4, name: 'Thai Massage', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80', rating: 4.7, reviews: 89, duration: 90, price: 110, tags: ['Stretching'], description: 'Ancient stretching and energy work.' },
-  { id: 5, name: 'Reiki Healing', image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=800&q=80', rating: 4.9, reviews: 112, duration: 60, price: 95, tags: ['Energy Healing'], description: 'Japanese energy healing.' },
-  { id: 6, name: 'Aromatherapy Spa', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 134, duration: 75, price: 130, tags: ['Essential Oils'], description: 'Essential oils treatment.' }
+  { id: 1, name: 'Deep Tissue Massage', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', rating: 4.9, reviews: 128, duration: 60, price: 120, tags: ['Organic Oils', 'Heated Table'], description: 'Therapeutic massage for deep muscle tension.', gradient: 'from-yellow-400 via-orange-400 to-red-400' },
+  { id: 2, name: 'Swedish Massage', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 95, duration: 60, price: 100, tags: ['Relaxation', 'Aromatherapy'], description: 'Classic relaxation massage.', gradient: 'from-blue-400 via-indigo-400 to-purple-400' },
+  { id: 3, name: 'Hot Stone Therapy', image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80', rating: 4.9, reviews: 156, duration: 90, price: 150, tags: ['Heated Stones'], description: 'Heated stones for deep relaxation.', gradient: 'from-pink-400 via-rose-400 to-red-400' },
+  { id: 4, name: 'Thai Massage', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80', rating: 4.7, reviews: 89, duration: 90, price: 110, tags: ['Stretching'], description: 'Ancient stretching and energy work.', gradient: 'from-green-400 via-teal-400 to-blue-400' },
+  { id: 5, name: 'Reiki Healing', image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=800&q=80', rating: 4.9, reviews: 112, duration: 60, price: 95, tags: ['Energy Healing'], description: 'Japanese energy healing.', gradient: 'from-purple-400 via-violet-400 to-indigo-400' },
+  { id: 6, name: 'Aromatherapy Spa', image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&q=80', rating: 4.8, reviews: 134, duration: 75, price: 130, tags: ['Essential Oils'], description: 'Essential oils treatment.', gradient: 'from-amber-400 via-yellow-400 to-orange-400' }
 ]
 
 // Therapists Data
@@ -80,6 +80,7 @@ const toggleFavorite = (id) => {
   const idx = favorites.value.indexOf(id)
   if (idx !== -1) favorites.value.splice(idx, 1)
   else favorites.value.push(id)
+  localStorage.setItem('favorites', JSON.stringify(favorites.value))
 }
 
 const openBooking = (service) => {
@@ -127,12 +128,6 @@ const closeModal = () => {
     router.push('/bookings')
   }
 }
-
-const getStatusColor = (status) => {
-  if (status === 'completed') return 'text-green-400 bg-green-400/20'
-  if (status === 'upcoming') return 'text-luxury-gold bg-luxury-gold/20'
-  return 'text-gray-400 bg-gray-400/20'
-}
 </script>
 
 <template>
@@ -140,31 +135,46 @@ const getStatusColor = (status) => {
     <h2 class="text-xl font-bold mb-6">All Services</h2>
     
     <div class="space-y-4">
-      <div v-for="service in services" :key="service.id" class="bg-luxury-charcoal rounded-2xl overflow-hidden">
-        <div class="relative h-48">
+      <div v-for="service in services" :key="service.id" :class="`bg-gradient-to-br ${service.gradient} rounded-3xl overflow-hidden text-white relative`">
+        <!-- Image overlay -->
+        <div class="absolute inset-0 opacity-40">
           <img :src="service.image" :alt="service.name" class="w-full h-full object-cover" />
-          <button @click.stop="toggleFavorite(service.id)" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-luxury-dark/50 flex items-center justify-center">
-            <svg class="w-5 h-5" :class="favorites.includes(service.id) ? 'text-luxury-gold' : 'text-white'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
-          </button>
         </div>
-        <div class="p-4">
-          <div class="flex items-start justify-between mb-2">
-            <h3 class="text-lg font-bold">{{ service.name }}</h3>
-            <div class="flex items-center gap-1 text-luxury-gold">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-              <span>{{ service.rating }} ({{ service.reviews }})</span>
+        
+        <!-- Content -->
+        <div class="relative p-6">
+          <!-- Header -->
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <span class="font-semibold">{{ service.rating }} ({{ service.reviews }})</span>
+              </div>
+              <h3 class="text-xl font-bold">{{ service.name }}</h3>
             </div>
+            <button @click.stop="toggleFavorite(service.id)" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <svg class="w-5 h-5" :class="favorites.includes(service.id) ? 'text-yellow-300' : 'text-white'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
+            </button>
           </div>
-          <p class="text-gray-400 text-sm mb-3">{{ service.description }}</p>
-          <div class="flex flex-wrap gap-2 mb-3">
-            <span v-for="tag in service.tags" :key="tag" class="px-3 py-1 bg-luxury-dark border border-luxury-gold/30 rounded-full text-xs">{{ tag }}</span>
+          
+          <!-- Description -->
+          <p class="text-white/90 text-sm mb-4">{{ service.description }}</p>
+          
+          <!-- Tags -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span v-for="tag in service.tags" :key="tag" class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs">{{ tag }}</span>
           </div>
+          
+          <!-- Price & Button -->
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-2xl font-bold text-luxury-gold">{{ formatPrice(service.price) }}</span>
-              <span class="text-gray-400 ml-2">- {{ service.duration }} min</span>
+              <span class="text-2xl font-bold">{{ formatPrice(service.price) }}</span>
+              <span class="text-white/80 ml-2">- {{ service.duration }} min</span>
             </div>
-            <button @click="openBooking(service)" class="px-6 py-2 bg-luxury-gold text-luxury-dark font-medium rounded-full">Book Now</button>
+            <button @click="openBooking(service)" class="px-6 py-3 bg-white text-black font-semibold rounded-full flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Book Now
+            </button>
           </div>
         </div>
       </div>

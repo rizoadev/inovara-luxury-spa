@@ -11,6 +11,7 @@ import EditProfile from '../views/EditProfile.vue'
 import Notifications from '../views/Notifications.vue'
 import Privacy from '../views/Privacy.vue'
 import HelpSupport from '../views/HelpSupport.vue'
+import Offers from '../views/Offers.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -24,7 +25,8 @@ const routes = [
   { path: '/edit-profile', name: 'EditProfile', component: EditProfile },
   { path: '/notifications', name: 'Notifications', component: Notifications },
   { path: '/privacy', name: 'Privacy', component: Privacy },
-  { path: '/help-support', name: 'HelpSupport', component: HelpSupport }
+  { path: '/help-support', name: 'HelpSupport', component: HelpSupport },
+  { path: '/offers', name: 'Offers', component: Offers }
 ]
 
 const router = createRouter({
