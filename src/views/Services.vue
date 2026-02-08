@@ -45,6 +45,29 @@ const selectedTime = ref('')
 const bookingNotes = ref('')
 const currentBookingStep = ref(1)
 const bookingSuccess = ref(false)
+const appliedDiscount = ref(null)
+
+const discounts = [
+  { code: 'FIRST20', discount: 20, title: '20% Off First Visit' },
+  { code: 'MASSAGE50', discount: 50, title: '50% Off Massage' },
+  { code: 'PACKAGE30', discount: 30, title: '30% Off Package' }
+]
+
+const applyDiscount = (discount) => {
+  appliedDiscount.value = discount
+}
+
+const clearDiscount = () => {
+  appliedDiscount.value = null
+}
+
+const getDiscountedPrice = (price) => {
+  if (appliedDiscount.value) {
+    const discountAmount = (price * appliedDiscount.value.discount) / 100
+    return Math.round(price - discountAmount)
+  }
+  return price
+}
 
 // Computed
 const availableDates = computed(() => {
@@ -107,13 +130,16 @@ const selectTherapist = (therapist) => {
 }
 
 const confirmBooking = () => {
+  const discountedPrice = getDiscountedPrice(selectedService.value.price)
   const booking = {
     id: `BK-${String(Date.now()).slice(-6)}`,
     date: selectedDate.value,
     time: selectedTime.value,
     service: selectedService.value.name,
     therapist: selectedTherapist.value?.name || 'Any Available',
-    price: selectedService.value.price,
+    originalPrice: selectedService.value.price,
+    price: discountedPrice,
+    discount: appliedDiscount.value?.code || null,
     status: 'upcoming',
     duration: selectedService.value.duration,
     notes: bookingNotes.value
@@ -260,15 +286,42 @@ const closeModal = () => {
 
             <!-- Step 3: Summary -->
             <div v-if="currentBookingStep === 3" class="space-y-4">
+              <!-- Discount Section -->
+              <div v-if="!appliedDiscount" class="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-xl p-4 text-white">
+                <p class="text-xs font-semibold tracking-wider opacity-80 mb-1">EXCLUSIVE OFFER</p>
+                <h4 class="font-bold mb-2">20% Off Your First Visit</h4>
+                <div class="flex gap-2">
+                  <button @click="applyDiscount(discounts[0])" class="px-3 py-1.5 bg-white text-black text-xs font-semibold rounded-full">Apply FIRST20</button>
+                  <button @click="applyDiscount(discounts[2])" class="px-3 py-1.5 bg-white/20 text-white text-xs rounded-full">PACKAGE30</button>
+                </div>
+              </div>
+              
+              <!-- Applied Discount -->
+              <div v-else class="bg-green-500/20 border border-green-500 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-green-400 font-semibold">{{ appliedDiscount.title }}</p>
+                    <p class="text-xs text-gray-400">Code: {{ appliedDiscount.code }}</p>
+                  </div>
+                  <button @click="clearDiscount" class="text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              </div>
+              
               <div class="bg-luxury-dark rounded-xl p-4 space-y-3">
                 <div class="flex justify-between"><span class="text-gray-400">Service</span><span>{{ selectedService?.name }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-400">Duration</span><span>{{ selectedService?.duration }} min</span></div>
                 <div class="flex justify-between"><span class="text-gray-400">Date</span><span>{{ formatDate(selectedDate) }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-400">Time</span><span>{{ selectedTime }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-400">Therapist</span><span>{{ selectedTherapist?.name || 'Any Available' }}</span></div>
+                <div v-if="appliedDiscount" class="flex justify-between text-green-400">
+                  <span>Discount ({{ appliedDiscount.discount }}%)</span>
+                  <span>-{{ formatPrice(Math.round((selectedService?.price * appliedDiscount.discount) / 100)) }}</span>
+                </div>
                 <div class="border-t border-luxury-charcoal pt-3 flex justify-between font-bold">
                   <span>Total</span>
-                  <span class="text-luxury-gold">{{ formatPrice(selectedService?.price) }}</span>
+                  <span class="text-luxury-gold">{{ formatPrice(getDiscountedPrice(selectedService?.price)) }}</span>
                 </div>
               </div>
               <div>
